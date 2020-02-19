@@ -5,6 +5,8 @@ Server::Server(){}
 Server::~Server(){}
 
 void Server::startServer(){
+
+    db.connectDatabase();
     if (this->listen(QHostAddress::Any,port)){
         qDebug()<< "Listening";
     }else

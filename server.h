@@ -3,6 +3,7 @@
 
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <database.h>
 
 class Server: public QTcpServer
 {
@@ -11,8 +12,10 @@ class Server: public QTcpServer
 public:
     Server();
     ~Server();
-public slots:
     void startServer();
+
+private slots:
+
     void incomingConnection(qintptr handle) override;
     void sockReady();
     void sockDisconnect();
@@ -20,6 +23,8 @@ private:
     QTcpSocket* socket = nullptr;
     QByteArray recievedData;
     quint16 port = 5555;
+    Database_interface db;
+
 };
 
 #endif // SERVER_H
