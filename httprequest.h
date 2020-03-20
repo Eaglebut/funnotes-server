@@ -1,20 +1,15 @@
-#ifndef HTTPOBJECT_H
-#define HTTPOBJECT_H
+#ifndef HTTPREQUEST_H
+#define HTTPREQUEST_H
+
 
 #include<QString>
-#include<QPair>
-#include<QTextStream>
-#include <QDebug>
+#include<QMap>
 
-
-#define OK_SERVER "200 OK"
-#define HTTP_VERSION "HTTP/1.1"
-
-class HttpObject
+class HttpRequest
 {
 public:
-    HttpObject();
-    HttpObject(const QString &reqest);
+    HttpRequest();
+    HttpRequest(const QString &reqest);
 
     void parseHttp(const QString &request);
 
@@ -22,6 +17,9 @@ public:
     QString getMethod() const;
     QString getURI() const;
     QString getHTTPVersion() const;
+    QMap<QString,QString> getHeaders() const;
+    QString getHeaderValue(const QString &header) const;
+    QString getBody() const;
 
 private:
     void parseRequestLine(const QString &requestLineString);
@@ -31,10 +29,11 @@ private:
 
     QString method = "";
     QString URI = "";
-    QString HTTPVersion = "";
+    QString httpVersion = "";
 
     QMap<QString,QString> requestHeaders;
     QString requestBody;
 };
 
-#endif // HTTPOBJECT_H
+
+#endif // HTTPREQUEST_H

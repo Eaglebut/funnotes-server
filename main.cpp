@@ -1,33 +1,37 @@
 #include <QCoreApplication>
-#include "server.h"
-#include "database.h"
-#include "tester.h"
 #include <QTest>
-#include<iostream>
+#include <iostream>
+#include "httprequest.h"
+#include "httpresponse.h"
+#include "server.h"
 int main(int argc, char *argv[])
 {
 
     QCoreApplication a(argc, argv);
 
-    /*Server server;
+    Server server;
     server.startServer();
-*/
-    QString request = "GET / HTTP/1.1\r\n"
-                      "Host: localhost:5555\r\n"
-                      "Connection: Upgrade\r\n"
-                      "Pragma: no-cache\r\n"
-                      "Cache-Control: no-cache\r\n"
-                      "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36\r\n"
-                      "Upgrade: websocket\r\n"
-                      "Origin: file://\r\n"
-                      "Sec-WebSocket-Version: 13\r\n"
-                      "Accept-Encoding: gzip, deflate, br\r\n"
-                      "Accept-Language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7\r\n"
-                      "Sec-WebSocket-Key: JTQR7L0z/zzSOqDCXHHx9A==\r\n"
-                      "Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n"
-                      "\r\n"
-                      "12345";
-    HttpObject object(request);
+
+    HttpRequest request;
+    request.parseHttp("GET /1855011600 HTTP/1.1\nUser-Agent: Android 10 FunNotes v0.0.1\nAccept-Language: ru en\nDate: 24.03.2020 11: 15: 13 MSK\nAuthorization: Basic 3698830527\n\n");
+    HttpResponse response = server.manageRequest(request);
+    qDebug() << response.getResponse();
+    request.parseHttp("GET /185511600 HTTP/1.1\nUser-Agent: Android 10 FunNotes v0.0.1\nAccept-Language: ru en\nDate: 24.03.2020 11: 15: 13 MSK\nAuthorization: Basic 3698830527\n\n");
+    response = server.manageRequest(request);
+    qDebug() << response.getResponse();
+    request.parseHttp("GET/185511600 HTTP/1.1\nUser-Aget: Android 10 FunNotes v0.0.1\nAccept-Language: ru en\nDate: 24.03.2020 11: 15: 13 MSK\nAuthorization: Basic 3698830527\n\n");
+    response = server.manageRequest(request);
+    qDebug() << response.getResponse();
+
+    request.parseHttp("GET /1855011600/16 HTTP/1.1\nUser-Agent: Android 10 FunNotes v0.0.1\nAccept-Language: ru en\nDate: 24.03.2020 11: 15: 13 MSK\nAuthorization: Basic 3698830527\n\n");
+    response = server.manageRequest(request);
+    qDebug() << response.getResponse();
+
+    request.parseHttp("PUT /test1 HTTP/1.1\nUser-Agent: Android 10 FunNotes v0.0.1\nAccept-Language: ru en\nDate: 24.03.2020 11: 15: 13 MSK\nAuthorization: Basic test1\n\n");
+    response = server.manageRequest(request);
+    qDebug() << response.getResponse();
+
+
 
     //QTest::qExec(new RequestHandlerTester, argc,argv);
 

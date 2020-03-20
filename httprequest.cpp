@@ -1,22 +1,24 @@
-#include "httpobject.h"
+#include "httprequest.h"
 
-HttpObject::HttpObject()
+
+
+HttpRequest::HttpRequest()
 {
 
 }
 
-HttpObject::HttpObject(const QString &reqest)
+HttpRequest::HttpRequest(const QString &reqest)
 {
     this->parseHttp(reqest);
 }
 
 
-QString HttpObject::lastError() const
+QString HttpRequest::lastError() const
 {
     return this->error;
 }
 
-void HttpObject::parseRequestLine(const QString &requestLineString)
+void HttpRequest::parseRequestLine(const QString &requestLineString)
 {
     QList<QString> requestLine = requestLineString.split(" ");
     if (requestLine.length() != 3){
@@ -25,10 +27,10 @@ void HttpObject::parseRequestLine(const QString &requestLineString)
     }
     this->method = requestLine[0];
     this->URI = requestLine[1];
-    this->HTTPVersion = requestLine[2];
+    this->httpVersion = requestLine[2];
 }
 
-void HttpObject::parseHeaders(QList<QString> &headersList)
+void HttpRequest::parseHeaders(QList<QString> &headersList)
 {
     QList<QString> splitedHeader;
     qint32 index;
@@ -37,28 +39,48 @@ void HttpObject::parseHeaders(QList<QString> &headersList)
         if (index != -1){
             this->requestHeaders.insert(header.left(index).simplified(),
                                         header.right(header.length()- index - 1).simplified());
-
         }
 
     }
 }
 
-QString HttpObject::getHTTPVersion() const
+QString HttpRequest::getBody() const
 {
-    return HTTPVersion;
+    return requestBody;
 }
 
-QString HttpObject::getURI() const
+QString HttpRequest::getHTTPVersion() const
+{
+    return httpVersion;
+}
+
+QMap<QString, QString> HttpRequest::getHeaders() const
+{
+    return this->requestHeaders;
+}
+
+QString HttpRequest::getHeaderValue(const QString &header) const
+{
+    try {
+        return this->requestHeaders.value(header);
+
+    } catch (std::out_of_range &e) {
+        return "";
+    }
+}
+
+QString HttpRequest::getURI() const
 {
     return URI;
 }
 
-QString HttpObject::getMethod() const
+QString HttpRequest::getMethod() const
 {
     return method;
 }
 
-void HttpObject::parseHttp(const QString &request){
+void HttpRequest::parseHttp(const QString &request){
+    this->error = "";
     qint32 index = request.indexOf("\r\n\r\n");
     QList<QString> requestHead;
     if (index == -1){
@@ -91,6 +113,7 @@ void HttpObject::parseHttp(const QString &request){
     else
     {
         this->error = "INVALID HTTP: NO HEAD";
+        return;
     }
 
     parseRequestLine(requestHead[0]);
@@ -102,4 +125,6 @@ void HttpObject::parseHttp(const QString &request){
         return;
 
 }
+
+
 

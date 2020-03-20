@@ -26,7 +26,8 @@ SUBDIRS += testing
 
 SOURCES += \
         database.cpp \
-        httpobject.cpp \
+        httprequest.cpp \
+        httpresponse.cpp \
         main.cpp \
         server.cpp \
         tester.cpp
@@ -38,7 +39,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     database.h \
-    httpobject.h \
+    httprequest.h \
+    httpresponse.h \
     server.h \
     tester.h \
     tests/tester.h

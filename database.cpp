@@ -177,13 +177,22 @@ QMap <QString,QString> Database_interface::getEvent(QString userId,QString event
     QMap <QString,QString> event;
     QString request = "SELECT * FROM `events` WHERE `userid` = '" + userId + "' "
             +"AND `id` = '" + eventId + "'";
+    QDateTime datetime;
+    QString time;
+
     if (query->exec(request))
     {
         if(query->next())
         {
             event.insert("id",query->value(EventParts::ID).toString());
-            event.insert("startTime",query->value(EventParts::START_TIME).toString());
-            event.insert("endTime",query->value(EventParts::END_TIME).toString());
+            time = query->value(EventParts::START_TIME).toString();
+            datetime = QDateTime::fromString(time,"yyyy-MM-ddThh:mm:ss.zzz");
+            event.insert("startTime", QString::number(datetime.toSecsSinceEpoch()));
+
+            time = query->value(EventParts::END_TIME).toString();
+            datetime = QDateTime::fromString(time,"yyyy-MM-ddThh:mm:ss.zzz");
+            event.insert("endTime", QString::number(datetime.toSecsSinceEpoch()));
+
             event.insert("title",query->value(EventParts::TITLE).toString());
             event.insert("description",query->value(EventParts::DESCRIPTION).toString());
             event.insert("type",query->value(EventParts::TYPE).toString());
@@ -201,12 +210,19 @@ QVector<QMap <QString,QString>> Database_interface::getUserEvents(QString userId
     QMap <QString,QString>* event;
     QString db_output;
     QString request = "SELECT * FROM `events` WHERE `userid` = '" + userId + "'";
+    QString time;
+    QDateTime datetime;
     if (query->exec(request))
         while (query->next()) {
             event = new QMap <QString,QString>;
             event->insert("id",query->value(EventParts::ID).toString());
-            event->insert("startTime",query->value(EventParts::START_TIME).toString());
-            event->insert("endTime",query->value(EventParts::END_TIME).toString());
+            time = query->value(EventParts::START_TIME).toString();
+            datetime = QDateTime::fromString(time,"yyyy-MM-ddThh:mm:ss.zzz");
+            event->insert("startTime", QString::number(datetime.toSecsSinceEpoch()));
+
+            time = query->value(EventParts::END_TIME).toString();
+            datetime = QDateTime::fromString(time,"yyyy-MM-ddThh:mm:ss.zzz");
+            event->insert("endTime", QString::number(datetime.toSecsSinceEpoch()));
             event->insert("title",query->value(EventParts::TITLE).toString());
             event->insert("description",query->value(EventParts::DESCRIPTION).toString());
             event->insert("type",query->value(EventParts::TYPE).toString());
