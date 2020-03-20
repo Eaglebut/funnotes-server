@@ -22,7 +22,7 @@ private slots:
 private:
     QTcpSocket* socket = nullptr;
     QByteArray recievedData;
-    quint16 port = 5555;
+    quint16 port = 8080;
     Database_interface db;
 
 };

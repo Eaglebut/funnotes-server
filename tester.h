@@ -6,7 +6,7 @@
 #include <QVector>
 #include <QString>
 #include <QRandomGenerator>
-
+#include "httpobject.h"
 
 
 class DatabaseIntefaceTester: public QObject
@@ -36,6 +36,44 @@ private:
     QString eventId;
 };
 
+class RequestHandlerTester: public QObject{
+    Q_OBJECT
+public:
+    explicit RequestHandlerTester(QObject* parent = 0);
 
+private slots:
+    void handleTRACERequest();
+    void handleGETRequest();
+    void handleHEADRequest();
+    void handlePOSTRequest();
+    void handleDELETERequest();
+
+private:
+};
 
 #endif // TESTER_H
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

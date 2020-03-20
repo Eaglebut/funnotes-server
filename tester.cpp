@@ -72,3 +72,30 @@ void DatabaseIntefaceTester::deleteEvent(){
 
     QVERIFY(db.deleteEvent(db.getUserId(username,password),eventId));
 }
+
+RequestHandlerTester::RequestHandlerTester(QObject* parent):
+    QObject(parent)
+{
+
+}
+
+void RequestHandlerTester::handleTRACERequest()
+{
+
+}
+void RequestHandlerTester::handleGETRequest()
+{
+
+}
+void RequestHandlerTester::handleHEADRequest()
+{
+
+}
+void RequestHandlerTester::handlePOSTRequest()
+{
+
+}
+void RequestHandlerTester::handleDELETERequest()
+{
+
+}
