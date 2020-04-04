@@ -1,7 +1,15 @@
 #include "server.h"
 
+#include <QNetworkInterface>
 
-Server::Server(){}
+
+Server::Server(){
+    const QHostAddress &localhost = QHostAddress(QHostAddress::LocalHost);
+    for (const QHostAddress &address: QNetworkInterface::allAddresses()) {
+        if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost)
+            qDebug() << address.toString();
+    }
+}
 
 Server::~Server(){}
 
@@ -14,7 +22,6 @@ void Server::startServer(){
     {
         qDebug()<<"Not listening";
     }
-
 }
 
 
@@ -25,17 +32,20 @@ void Server::incomingConnection(qintptr handle){
     connect(socket,SIGNAL(disconnected()),this,SLOT(sockDisconnect()));
 
     qDebug() << socketDescriptor()<< " client connected";
+    db.testDatabase();
 
 }
 
 
 void Server::sockReady(){
+
     HttpRequest request;
     HttpResponse response;
     recievedData = socket->readAll();
     qDebug() << recievedData;
     request.parseHttp(recievedData);
     response = manageRequest(request);
+    qDebug() << response.getResponse();
     socket->write(response.getResponse().toUtf8());
     socket->disconnectFromHost();
 }
@@ -46,6 +56,202 @@ void Server::sockDisconnect(){
     qDebug()<<"disconected";
     socket->deleteLater();
 }
+
+HttpResponse Server::manageGETUser(const QString userId)
+{
+    QVector<QMap <QString,QString>> events_vector = db.getUserEvents(userId);
+    QJsonArray events;
+    QJsonObject* event;
+    for (QMap<QString,QString> &event_map: events_vector){
+        event = new QJsonObject;
+        for (qint32 i = 0; i < event_map.size();i++){
+            if (event_map.keys().at(i) == "startTime"){
+                event->insert(event_map.keys().at(i),event_map.values().at(i).toInt());
+            }
+            else if (event_map.keys().at(i) == "endTime"){
+                event->insert(event_map.keys().at(i),event_map.values().at(i).toInt());
+            }
+            else
+                event->insert(event_map.keys().at(i),event_map.values().at(i));
+        }
+        event->remove("type");
+        events.push_back(*event);
+        delete event;
+    }
+    QJsonObject body;
+    body.insert("events",events);
+    QJsonDocument doc(body);
+    HttpResponse response = OK();
+    response.setBody(doc.toJson(QJsonDocument::Compact));
+    return response;
+}
+
+HttpResponse Server::manageGETEvent(const HttpRequest &request, QString userId)
+{
+    QJsonDocument doc = QJsonDocument::fromJson(request.getBody().toUtf8());
+    if (doc.isObject()){
+        QJsonObject obj = doc.object();
+        QString eventId = QString::number( obj.value("id").toInt());
+        QMap <QString,QString> event_map = db.getEvent(userId, eventId);
+        if (event_map.keys().length() == 0)
+            return forbidden();
+        else{
+            QJsonObject event;
+            for (qint32 i = 0; i < event_map.size();i++){
+                if (event_map.keys().at(i) == "startTime"){
+                    event.insert(event_map.keys().at(i),event_map.values().at(i).toInt());
+                }
+                else if (event_map.keys().at(i) == "endTime"){
+                    event.insert(event_map.keys().at(i),event_map.values().at(i).toInt());
+                }
+                else
+                    event.insert(event_map.keys().at(i),event_map.values().at(i));
+            }
+            event.remove("type");
+            doc.setObject(event);
+            HttpResponse response = OK();
+            response.setBody(doc.toJson(QJsonDocument::Compact));
+            return response;
+        }
+    }
+    else
+        return badRequest();
+}
+
+HttpResponse Server::managePUTUser(const QString &login, const QString &password)
+{
+    if (db.addUser(login,password))
+        return created();
+    else
+        return conflict();
+}
+
+HttpResponse Server::managePUTEvent(const HttpRequest &request, QString userId)
+{
+    QJsonDocument doc = QJsonDocument::fromJson(request.getBody().toUtf8());
+    if (doc.isObject()){
+        QJsonObject obj = doc.object();
+        QString eventId = db.addEvent(userId,
+                                      QString::number(obj.value("start_time").toInt()),
+                                      QString::number(obj.value("end_time").toInt()),
+                                      obj.value("title").toString(),
+                                      obj.value("description").toString());
+        if (eventId != ""){
+            QJsonObject obj;
+            obj.insert("id",eventId);
+            doc.setObject(obj);
+            HttpResponse response = created();
+            response.setBody(doc.toJson(QJsonDocument::Compact));
+            return response;
+        }
+        else return badRequest();
+    }
+    else
+        return badRequest();
+}
+
+HttpResponse Server::managePOSTUser(const HttpRequest &request,const QString &login,const QString &password)
+{
+    QJsonDocument doc = QJsonDocument::fromJson(request.getBody().toUtf8());
+    if (doc.isObject()){
+        QJsonObject obj = doc.object();
+        if(db.changeUserPassword(login,password,obj.value("password").toString()))
+            return OK();
+        else return badRequest();
+    }
+    else
+        return badRequest();
+}
+
+HttpResponse Server::managePOSTEvent(const HttpRequest &request, QString userId)
+{
+    QJsonDocument doc = QJsonDocument::fromJson(request.getBody().toUtf8());
+    if (doc.isObject()){
+        QJsonObject obj = doc.object();
+        if( db.modifyEvent(userId,
+                           obj.value("id").toString(),
+                           QString::number( obj.value("start_time").toInt()),
+                           QString::number( obj.value("end_time").toInt()),
+                           obj.value("title").toString(),
+                           obj.value("description").toString()))
+            return OK();
+        else
+            return badRequest();
+    }
+    else
+        return badRequest();
+
+}
+
+HttpResponse Server::manageDELETEEvent(const HttpRequest &request, QString userId)
+{
+
+    QJsonDocument doc = QJsonDocument::fromJson(request.getBody().toUtf8());
+    if (doc.isObject()){
+        QJsonObject obj = doc.object();
+        QString eventId = QString::number( obj.value("id").toInt());
+        if (db.deleteEvent(userId, eventId)){
+            HttpResponse response = OK();
+            response.setBody(doc.toJson(QJsonDocument::Compact));
+            return response;
+        }
+        else
+            return badRequest();
+    }
+    else
+        return badRequest();
+}
+
+HttpResponse Server::badRequest()
+{
+    HttpResponse response;
+    response.addHeader("Server",SERVER_NAME);
+    response.addHeader("Date",QDateTime::currentDateTime().toUTC().toString("dd.MM.yyyy hh:mm:ss"));
+    response.setStatusCode(BAD_REQUEST);
+    response.setStatusText("Bad request");
+    return response;
+}
+
+HttpResponse Server::forbidden()
+{
+    HttpResponse response;
+    response.addHeader("Server",SERVER_NAME);
+    response.addHeader("Date",QDateTime::currentDateTime().toUTC().toString("dd.MM.yyyy hh:mm:ss"));
+    response.setStatusCode(FORBIDDEN);
+    response.setStatusText("Forbidden");
+    return response;
+}
+
+HttpResponse Server::OK()
+{
+    HttpResponse response;
+    response.addHeader("Server",SERVER_NAME);
+    response.addHeader("Date",QDateTime::currentDateTime().toUTC().toString("dd.MM.yyyy hh:mm:ss"));
+    response.setStatusCode(CODE_OK);
+    response.setStatusText("OK");
+    return response;
+}
+
+HttpResponse Server::conflict()
+{
+    HttpResponse response;
+    response.addHeader("Server",SERVER_NAME);
+    response.addHeader("Date",QDateTime::currentDateTime().toUTC().toString("dd.MM.yyyy hh:mm:ss"));
+    response.setStatusCode(CONFLICT);
+    response.setStatusText("Conflict");
+    return response;
+}
+
+HttpResponse Server::created()
+{
+    HttpResponse response;
+    response.addHeader("Server",SERVER_NAME);
+    response.addHeader("Date",QDateTime::currentDateTime().toUTC().toString("dd.MM.yyyy hh:mm:ss"));
+    response.setStatusCode(CREATED);
+    response.setStatusText("Created");
+    return response;
+}
+
 
 HttpResponse Server::browserRequest(const HttpRequest &request)
 {
@@ -109,8 +315,7 @@ HttpResponse Server::manageRequest(const HttpRequest &request)
     QList <QString> splitedURI;
     QList <QString> splitedPassword;
     QString userId , login, password;
-    response.addHeader("Server",SERVER_NAME);
-    response.addHeader("Date",QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss t"));
+
     if (request.lastError() == ""){
         splitedURI = request.getURI().split("/");
         splitedURI.removeFirst();
@@ -118,77 +323,42 @@ HttpResponse Server::manageRequest(const HttpRequest &request)
         login = splitedURI.takeFirst();
         password = splitedPassword.takeLast();
         userId = db.getUserId(login,password);
-        if (userId != ""){
+        if (request.getMethod() == "PUT" && userId == 0 && splitedURI.length() == 0)
+            return managePUTUser(login, password);
+        else if (userId != "")
+        {
             if (request.getMethod() == "GET"){
                 if (splitedURI.length() == 0)
-                {
-                    QVector<QMap <QString,QString>> events_vector = db.getUserEvents(userId);
-                    QJsonArray events;
-                    QJsonObject* event;
-                    for (QMap<QString,QString> &event_map: events_vector){
-                        event = new QJsonObject;
-                        for (qint32 i = 0; i < event_map.size();i++){
-                            if (event_map.keys().at(i) == "startTime"){
-                                event->insert(event_map.keys().at(i),event_map.values().at(i).toInt());
-                            }
-                            else if (event_map.keys().at(i) == "endTime"){
-                                event->insert(event_map.keys().at(i),event_map.values().at(i).toInt());
-                            }
-                            else
-                                event->insert(event_map.keys().at(i),event_map.values().at(i));
-                        }
-                        event->remove("type");
-                        events.push_back(*event);
-                        delete event;
-                    }
-                    QJsonObject body;
-                    body.insert("events",events);
-                    QJsonDocument doc(body);
-                    response.setBody(doc.toJson(QJsonDocument::Compact));
-                    response.setStatusCode(OK);
-                    response.setStatusText("OK");
-                }
-                else if (splitedURI.length() == 1){
-                    QMap <QString,QString> event_map = db.getEvent(userId, splitedURI.takeLast());
-                    QJsonObject event;
-                    for (qint32 i = 0; i < event_map.size();i++){
-                        if (event_map.keys().at(i) == "startTime"){
-                            event.insert(event_map.keys().at(i),event_map.values().at(i).toInt());
-                        }
-                        else if (event_map.keys().at(i) == "endTime"){
-                            event.insert(event_map.keys().at(i),event_map.values().at(i).toInt());
-                        }
-                        else
-                            event.insert(event_map.keys().at(i),event_map.values().at(i));
-                    }
-                    event.remove("type");
-                    QJsonDocument doc(event);
-                    response.setBody(doc.toJson(QJsonDocument::Compact));
-                    response.setStatusCode(OK);
-                    response.setStatusText("OK");
-                }
-                else
-                {
-                    response.setStatusCode(BAD_REQUEST);
-                    response.setStatusText("Bad Request");
-                }
+                    return manageGETUser(userId);
+                else if(splitedURI.takeLast() == "event")
+                    return manageGETEvent(request,userId);
+                else return badRequest();
+            }
+            else if (request.getMethod() == "PUT"){
+                if(splitedURI.length()==0)
+                    return conflict();
+                else if(splitedURI.takeLast() == "event")
+                    return managePUTEvent(request,userId);
+                else return badRequest();
+            }
+            else if (request.getMethod() == "POST"){
+                if (splitedURI.length() == 0)
+                    return managePOSTUser(request,login,password);
+                else if(splitedURI.takeLast() == "event")
+                    return managePOSTEvent(request,userId);
+                else return badRequest();
+            }
+            else if (request.getMethod() == "DELETE"){
+                if (splitedURI.takeLast() == "event")
+                    return manageDELETEEvent(request,userId);
+                else return badRequest();
             }
             else
-            {
-                response.setStatusCode(BAD_REQUEST);
-                response.setStatusText("Bad Request");
-            }
+                return badRequest();
         }
         else
-        {
-            response.setStatusCode(FORBIDDEN);
-            response.setStatusText("Forbidden");
-        }
+            return forbidden();
     }
     else
-    {
-        response.setStatusCode(BAD_REQUEST);
-        response.setStatusText("Bad Request");
-    }
-    return response;
+        return badRequest();
 }

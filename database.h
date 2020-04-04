@@ -27,10 +27,11 @@ public:
     bool modifyEventEndTime(QString userId,QString eventId, QString NewEndTime);
     bool modifyEventTitle(QString userId,QString eventId, QString NewTitle);
     bool modifyEventDescription(QString userId,QString eventId, QString NewEventDescription);
+    bool modifyEvent(QString userId,QString eventId,QString startTime,QString endTime,QString title,QString description);
     QMap <QString,QString> getEvent(QString userId,QString eventId);
     QVector<QMap <QString,QString>> getUserEvents(QString userId);
     bool deleteEvent(QString userId,QString eventId);
-
+    void testDatabase();
 private:
     QSqlDatabase db;
     QSqlQuery* query;

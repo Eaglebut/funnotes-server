@@ -24,6 +24,7 @@ void Database_interface::connectDatabase()
     }
     qDebug() << db.isValid();
     query = new QSqlQuery(db);
+
 }
 
 bool Database_interface::authorise(QString username,QString password){
@@ -172,6 +173,29 @@ bool Database_interface::modifyEventDescription(QString userId,QString eventId, 
     }
 }
 
+bool Database_interface::modifyEvent(QString userId, QString eventId, QString startTime, QString endTime, QString title, QString description)
+{
+    QString request = "UPDATE `events` SET `start_time` = FROM_UNIXTIME("
+            + startTime
+            + "), `end_time` = FROM_UNIXTIME("
+            + endTime
+            + "), `title` = '"
+            + title
+            + "', `description` = '"
+            + description
+            + "' WHERE `events`.`id` = "
+            + eventId
+            + " AND `events`.`userid` = "
+            + userId;
+    if (query->exec(request))
+        return true;
+    else
+    {
+        qDebug() << query->lastError();
+        return false;
+    }
+}
+
 QMap <QString,QString> Database_interface::getEvent(QString userId,QString eventId)
 {
     QMap <QString,QString> event;
@@ -229,8 +253,10 @@ QVector<QMap <QString,QString>> Database_interface::getUserEvents(QString userId
             userEvents.push_back(*event);
             delete event;
         }
-    else
+    else{
+
         qDebug() << query->lastError();
+    }
     return userEvents;
 
 }
@@ -241,9 +267,18 @@ bool Database_interface::deleteEvent(QString userId,QString eventId){
         return true;
     else
     {
+        query->clear();
         qDebug() << query->lastError();
         return false;
     }
+}
+
+void Database_interface::testDatabase()
+{
+    qDebug() << db.lastError();
+    qDebug() << db.isOpen();
+    qDebug() << db.isValid();
+    qDebug() << db.isOpenError();
 }
 
 

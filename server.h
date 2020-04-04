@@ -34,6 +34,20 @@ private:
     quint16 port = 8080;
     Database_interface db;
 
+    HttpResponse manageGETUser(const QString userId);
+    HttpResponse manageGETEvent(const HttpRequest &request, QString userId);
+    HttpResponse managePUTUser(const QString &login, const QString &password);
+    HttpResponse managePUTEvent(const HttpRequest &request, QString userId);
+    HttpResponse managePOSTUser(const HttpRequest &request,const QString &login,const QString &password);
+    HttpResponse managePOSTEvent(const HttpRequest &request, QString userId);
+    HttpResponse manageDELETEEvent(const HttpRequest &request, QString userId);
+    HttpResponse badRequest();
+    HttpResponse forbidden();
+    HttpResponse OK();
+    HttpResponse conflict();
+    HttpResponse created();
+
+
     HttpResponse browserRequest (const HttpRequest &arr);
     void sendToBrowser(const QString &message);
     QString decodeMessage(const QByteArray &messageArr);
@@ -51,7 +65,7 @@ private:
     startCodes startCodes;
 
     enum statusCodes{
-        OK = 200,
+        CODE_OK = 200,
         BAD_REQUEST = 400,
         FORBIDDEN = 403,
         CREATED = 201,
