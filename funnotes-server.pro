@@ -29,8 +29,7 @@ SOURCES += \
         httprequest.cpp \
         httpresponse.cpp \
         main.cpp \
-        server.cpp \
-        tester.cpp
+        server.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -42,5 +41,4 @@ HEADERS += \
     httprequest.h \
     httpresponse.h \
     server.h \
-    tester.h \
     tests/tester.h
