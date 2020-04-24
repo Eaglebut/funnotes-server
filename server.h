@@ -31,7 +31,7 @@ private slots:
 private:
     QTcpSocket* socket = nullptr;
     QByteArray recievedData;
-    quint16 port = 8080;
+    quint16 port = 2000;
     Database_interface db;
 
     HttpResponse manageGETUser(const QString userId);

@@ -16,7 +16,8 @@ Server::~Server(){}
 void Server::startServer(){
 
     db.connectDatabase();
-    if (this->listen(QHostAddress::Any,port)){
+
+    if (this->listen(QHostAddress("195.133.196.6"),port)){
         qDebug()<< "Listening";
     }else
     {
@@ -98,13 +99,6 @@ HttpResponse Server::manageGETEvent(const HttpRequest &request, QString userId)
         else{
             QJsonObject event;
             for (qint32 i = 0; i < event_map.size();i++){
-                if (event_map.keys().at(i) == "startTime"){
-                    event.insert(event_map.keys().at(i),event_map.values().at(i).toInt());
-                }
-                else if (event_map.keys().at(i) == "endTime"){
-                    event.insert(event_map.keys().at(i),event_map.values().at(i).toInt());
-                }
-                else
                     event.insert(event_map.keys().at(i),event_map.values().at(i));
             }
             event.remove("type");
@@ -170,8 +164,8 @@ HttpResponse Server::managePOSTEvent(const HttpRequest &request, QString userId)
         QJsonObject obj = doc.object();
         if( db.modifyEvent(userId,
                            obj.value("id").toString(),
-                           QString::number( obj.value("start_time").toInt()),
-                           QString::number( obj.value("end_time").toInt()),
+                           obj.value("start_time").toString(),
+                           obj.value("end_time").toString(),
                            obj.value("title").toString(),
                            obj.value("description").toString()))
             return OK();

@@ -41,4 +41,3 @@ HEADERS += \
     httprequest.h \
     httpresponse.h \
     server.h \
-    tests/tester.h

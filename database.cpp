@@ -12,8 +12,8 @@ void Database_interface::connectDatabase()
     db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("localhost");
     db.setDatabaseName("funnotes");
-    db.setUserName("root");
-    db.setPassword("");
+    db.setUserName("server");
+    db.setPassword("server_pass");
     if(db.open())
     {
         qDebug() << "database connected";
