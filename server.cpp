@@ -126,8 +126,8 @@ HttpResponse Server::managePUTEvent(const HttpRequest &request, QString userId)
     if (doc.isObject()){
         QJsonObject obj = doc.object();
         QString eventId = db.addEvent(userId,
-                                      QString::number(obj.value("start_time").toInt()),
-                                      QString::number(obj.value("end_time").toInt()),
+                                      obj.value("start_time").toString(),
+                                      obj.value("end_time").toString(),
                                       obj.value("title").toString(),
                                       obj.value("description").toString());
         if (eventId != ""){
