@@ -66,13 +66,6 @@ HttpResponse Server::manageGETUser(const QString userId)
     for (QMap<QString,QString> &event_map: events_vector){
         event = new QJsonObject;
         for (qint32 i = 0; i < event_map.size();i++){
-            if (event_map.keys().at(i) == "startTime"){
-                event->insert(event_map.keys().at(i),event_map.values().at(i).toInt());
-            }
-            else if (event_map.keys().at(i) == "endTime"){
-                event->insert(event_map.keys().at(i),event_map.values().at(i).toInt());
-            }
-            else
                 event->insert(event_map.keys().at(i),event_map.values().at(i));
         }
         event->remove("type");
@@ -130,6 +123,7 @@ HttpResponse Server::managePUTEvent(const HttpRequest &request, QString userId)
                                       obj.value("end_time").toString(),
                                       obj.value("title").toString(),
                                       obj.value("description").toString());
+        qDebug() <<  obj.value("start_time").toString();
         if (eventId != ""){
             QJsonObject obj;
             obj.insert("id",eventId);
