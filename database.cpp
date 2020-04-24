@@ -208,18 +208,19 @@ QMap <QString,QString> Database_interface::getEvent(QString userId,QString event
     {
         if(query->next())
         {
-            event.insert("id",query->value(EventParts::ID).toString());
-            time = query->value(EventParts::START_TIME).toString();
+            event.insert("id",query->value(ID).toString());
+            time = query->value(START_TIME).toString();
+            qDebug() << time;
             datetime = QDateTime::fromString(time,"yyyy-MM-ddThh:mm:ss.zzz");
             event.insert("startTime", QString::number(datetime.toSecsSinceEpoch()));
 
-            time = query->value(EventParts::END_TIME).toString();
+            time = query->value(END_TIME).toString();
             datetime = QDateTime::fromString(time,"yyyy-MM-ddThh:mm:ss.zzz");
             event.insert("endTime", QString::number(datetime.toSecsSinceEpoch()));
 
-            event.insert("title",query->value(EventParts::TITLE).toString());
-            event.insert("description",query->value(EventParts::DESCRIPTION).toString());
-            event.insert("type",query->value(EventParts::TYPE).toString());
+            event.insert("title",query->value(TITLE).toString());
+            event.insert("description",query->value(DESCRIPTION).toString());
+            event.insert("type",query->value(TYPE).toString());
         }
         else
             qDebug() << query->lastError();
