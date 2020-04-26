@@ -1,6 +1,6 @@
 #ifndef MYSQL_H
 #define MYSQL_H
-#include <QSqlError>
+#include<QSqlError>
 #include<QSqlDatabase>
 #include<QString>
 #include<QVector>
@@ -10,7 +10,7 @@
 #include<QVariant>
 #include<QDateTime>
 #include<QMap>
-#include <QJsonObject>
+#include<QJsonObject>
 
 class Database_interface
 {
