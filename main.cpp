@@ -97,6 +97,9 @@ void logOutput(QtMsgType type, const QMessageLogContext& context, const QString&
 
 int main(int argc, char *argv[])
 {
+
+
+
     QCoreApplication a(argc, argv);
 
     qInstallMessageHandler(logOutput);

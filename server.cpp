@@ -33,7 +33,6 @@ void Server::incomingConnection(qintptr handle){
     connect(socket,SIGNAL(disconnected()),this,SLOT(sockDisconnect()));
 
     qDebug() << socketDescriptor()<< " client connected";
-    db.testDatabase();
 
 }
 
@@ -54,7 +53,7 @@ void Server::sockReady(){
 
 
 void Server::sockDisconnect(){
-    qDebug()<<"disconected";
+    qDebug()<<"disconected\n";
     socket->deleteLater();
 }
 
@@ -123,7 +122,6 @@ HttpResponse Server::managePUTEvent(const HttpRequest &request, QString userId)
                                       obj.value("end_time").toString(),
                                       obj.value("title").toString(),
                                       obj.value("description").toString());
-        qDebug() <<  obj.value("start_time").toString();
         if (eventId != ""){
             QJsonObject obj;
             obj.insert("id",eventId);
