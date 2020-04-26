@@ -7,13 +7,13 @@ Database_interface::~Database_interface(){
     delete query;
 }
 
-void Database_interface::connectDatabase()
+void Database_interface::connectDatabase(const QJsonObject& settings)
 {
-    db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
-    db.setDatabaseName("funnotes");
-    db.setUserName("server");
-    db.setPassword("server_pass");
+    db = QSqlDatabase::addDatabase(settings.value("database").toString());
+    db.setHostName(settings.value("databaseHost").toString());
+    db.setDatabaseName(settings.value("databaseName").toString());
+    db.setUserName(settings.value("databaseUsername").toString());
+    db.setPassword(settings.value("databasePassword").toString());
     if(db.open())
     {
         qDebug() << "database connected";

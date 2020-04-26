@@ -20,7 +20,7 @@ class Server: public QTcpServer
 public:
     Server();
     ~Server();
-    void startServer();
+    void startServer(const QJsonObject& settings);
     HttpResponse manageRequest(const HttpRequest &request);
 
 private slots:

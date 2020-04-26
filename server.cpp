@@ -13,11 +13,11 @@ Server::Server(){
 
 Server::~Server(){}
 
-void Server::startServer(){
+void Server::startServer(const QJsonObject& settings){
 
-    db.connectDatabase();
+    db.connectDatabase(settings);
 
-    if (this->listen(QHostAddress("195.133.196.6"),port)){
+    if (this->listen(QHostAddress(settings.value("IP").toString()),settings.value("port").toInt())){
         qDebug()<< "Listening";
     }else
     {

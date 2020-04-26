@@ -10,6 +10,7 @@
 #include<QVariant>
 #include<QDateTime>
 #include<QMap>
+#include <QJsonObject>
 
 class Database_interface
 {
@@ -17,7 +18,7 @@ public:
     Database_interface();
     ~Database_interface();
 
-    void connectDatabase();
+    void connectDatabase(const QJsonObject& settings);
     bool authorise(QString username,QString password);
     bool addUser(QString username,QString password);
     QString getUserId(QString username,QString password);
